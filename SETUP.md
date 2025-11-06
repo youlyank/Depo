@@ -1,4 +1,4 @@
-# 📋 AI Workflow Builder - Setup Guide
+# 📋 AI Workflow Builder - Complete Setup Guide
 
 ## 🚀 Complete Setup Instructions
 
@@ -23,6 +23,23 @@ DATABASE_URL="file:./dev.db"
 SLACK_BOT_TOKEN="xoxb-your-slack-bot-token"
 SLACK_DEFAULT_CHANNEL="#general"
 
+# Google Sheets Integration (Optional)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_EMAIL="your-service-account-email"
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n..."
+
+# Discord Integration (Optional)
+DISCORD_BOT_TOKEN="your-discord-bot-token"
+DISCORD_DEFAULT_CHANNEL_ID="your-channel-id"
+
+# Email Integration (Optional)
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-app-password"
+SMTP_FROM="AI Workflow Builder <your-email@gmail.com>"
+
 # Note: z-ai-web-dev-sdk is pre-configured
 # No additional AI keys needed
 ```
@@ -44,48 +61,138 @@ npm run dev
 # Application will be available at http://localhost:3000
 ```
 
-## 🔧 Slack Integration Setup (Optional)
+## 🔌 Integration Setup (Optional but Recommended)
 
-### Step 1: Create Slack App
-1. Visit [Slack API](https://api.slack.com/apps)
-2. Click "Create New App" → "From scratch"
-3. Enter app name and select workspace
-4. Click "Create App"
+### 📊 Google Sheets Integration
+1. **Create Google Cloud Project**
+   - Go to [Google Cloud Console](https://console.cloud.google.com)
+   - Create new project
+   - Enable "Google Sheets API"
 
-### Step 2: Configure Permissions
-1. Go to "OAuth & Permissions"
-2. Add these Bot Token Scopes:
-   - `chat:write` (Send messages)
-   - `channels:read` (Read channel info)
-   - `groups:read` (Read private channels)
+2. **Create Service Account**
+   - Go to "IAM & Admin" → "Service Accounts"
+   - Click "Create Service Account"
+   - Enter name and click "Create and Continue"
+   - Skip granting roles (optional)
+   - Click "Done"
 
-### Step 3: Install App
-1. Scroll to "OAuth & Permissions"
-2. Click "Install to Workspace"
-3. Authorize the permissions
-4. Copy the "Bot User OAuth Token" (starts with `xoxb-`)
+3. **Generate Key**
+   - Find your service account and click on it
+   - Go to "Keys" tab
+   - Click "Add Key" → "Create new key"
+   - Select "JSON" and click "Create"
+   - Download the JSON file
 
-### Step 4: Configure in App
-1. Open the AI Workflow Builder
-2. Go to **Integrations** tab
-3. Enter your Bot Token
-4. Set default channel (e.g., `#general`)
-5. Click "Connect to Slack"
-6. Test the connection
+4. **Configure Service Account**
+   - Open the JSON file and copy:
+     - `client_id`
+     - `client_email` 
+     - `private_key` (the full key including "-----BEGIN PRIVATE KEY-----")
+
+5. **Share Spreadsheet**
+   - Open your Google Sheet
+   - Click "Share" → "Add people and groups"
+   - Paste the service account email
+   - Give "Editor" permissions
+
+6. **Configure in App**
+   - Go to **Integrations** tab → **Google Sheets**
+   - Enter the copied credentials
+   - Test connection
+
+### 🎮 Discord Integration
+1. **Create Discord Application**
+   - Go to [Discord Developer Portal](https://discord.com/developers/applications)
+   - Click "New Application"
+   - Enter app name and click "Create"
+
+2. **Create Bot**
+   - Go to "Bot" tab
+   - Click "Add Bot"
+   - Choose "Yes" for public bot (optional)
+   - Copy the Bot Token (starts with "MTA..." or similar)
+
+3. **Enable Intents**
+   - In Bot settings, enable:
+     - `SERVER MEMBERS INTENT`
+     - `MESSAGE CONTENT INTENT`
+     - `GUILD MESSAGES INTENT`
+
+4. **Invite Bot to Server**
+   - Go to "OAuth2" → "URL Generator"
+   - Select scopes: `bot`, `applications.commands`
+   - Copy the generated URL
+   - Paste in browser and invite to your server
+
+5. **Get Channel ID**
+   - In Discord, enable Developer Mode (User Settings → Advanced)
+   - Right-click on the channel and "Copy Channel ID"
+
+6. **Configure in App**
+   - Go to **Integrations** tab → **Discord**
+   - Enter Bot Token and Channel ID
+   - Test connection
+
+### 📧 Email Integration
+1. **Choose SMTP Provider**
+   - **Gmail**: Most popular option
+   - **Outlook**: Microsoft email
+   - **SendGrid**: Transactional email service
+   - **Custom**: Your own SMTP server
+
+2. **Gmail Setup (Recommended)**
+   - Enable 2-Factor Authentication
+   - Go to Google Account settings
+   - Security → 2-Step Verification → App passwords
+   - Generate new app password
+   - Use 16-character password (not your regular password)
+
+3. **Configure in App**
+   - Go to **Integrations** tab → **Email**
+   - Choose provider preset or enter custom settings
+   - Enter SMTP credentials
+   - Test with "Send Test Message"
+
+### 💬 Slack Integration
+1. **Create Slack App**
+   - Visit [Slack API](https://api.slack.com/apps)
+   - Click "Create New App" → "From scratch"
+   - Enter app name and select workspace
+
+2. **Configure Permissions**
+   - Go to "OAuth & Permissions"
+   - Add Bot Token Scopes:
+     - `chat:write` (Send messages)
+     - `channels:read` (Read channel info)
+     - `groups:read` (Read private channels)
+
+3. **Install App**
+   - Scroll down to "Install App"
+   - Click "Install to Workspace"
+   - Copy the "Bot User OAuth Token" (starts with `xoxb-`)
+
+4. **Invite Bot to Channels**
+   - In Slack, type `/invite @your-bot-name`
+   - Add bot to channels you want to send messages to
+
+5. **Configure in App**
+   - Go to **Integrations** tab → **Slack**
+   - Enter Bot Token and default channel
+   - Test connection
 
 ## 🎯 Quick Test
 
 ### Test AI Workflow Generation
 1. Go to **Builder** tab
-2. Enter this prompt: `"Send a test message to Slack when workflow runs"`
-3. Click "Generate Workflow"
-4. Click "Run" to execute
-5. Check your Slack channel for the message!
+2. Enter this prompt: `"Read data from Google Sheets and send to Slack"`
+3. Click **Generate Workflow**
+4. Click **Run** to execute
+5. Check results in **Monitor** tab
 
-### Test Slack Integration
-1. Go to **Integrations** tab → **Test Connection**
-2. Click "Send Test Message"
-3. Verify message appears in your Slack workspace
+### Test Multi-Integration Workflow
+1. Enter this prompt: `"When user signs up, add to Google Sheets, send Discord notification, and email welcome"`
+2. Generate and run the workflow
+3. Check all three platforms for real notifications!
 
 ## 📁 Project Structure Overview
 
@@ -95,18 +202,28 @@ Depo/
 │   ├── app/
 │   │   ├── api/                    # Backend API endpoints
 │   │   │   ├── workflows/          # Workflow management
-│   │   │   ├── integrations/       # Slack integration
+│   │   │   ├── integrations/       # All 4 integrations
+│   │   │   │   ├── slack/          # Slack API
+│   │   │   │   ├── google-sheets/  # Google Sheets API
+│   │   │   │   ├── discord/        # Discord API
+│   │   │   │   └── email/          # Email API
 │   │   │   ├── templates/          # Workflow templates
 │   │   │   └── executions/         # Execution monitoring
 │   │   └── page.tsx               # Main application UI
 │   ├── components/                 # React components
 │   │   ├── execution-monitor.tsx   # Real-time monitoring
 │   │   ├── slack-integration.tsx   # Slack setup UI
+│   │   ├── google-sheets-integration.tsx # Google Sheets UI
+│   │   ├── discord-integration.tsx # Discord setup UI
+│   │   ├── email-integration.tsx   # Email setup UI
 │   │   ├── workflow-analytics.tsx  # Analytics dashboard
 │   │   ├── workflow-scheduler.tsx  # Scheduling interface
 │   │   └── workflow-templates.tsx  # Template gallery
 │   └── lib/                        # Core business logic
 │       ├── slack.ts                # Slack API service
+│       ├── google-sheets.ts        # Google Sheets service
+│       ├── discord.ts              # Discord service
+│       ├── email.ts                # Email service
 │       ├── workflow-generator.ts   # AI workflow creation
 │       ├── workflow-scheduler.ts   # Cron scheduling
 │       └── db.ts                   # Database client
@@ -144,7 +261,13 @@ npm run lint             # Run ESLint
 - [x] Workflow scheduling with cron
 - [x] Analytics and metrics dashboard
 - [x] Template library
-- [x] Real Slack integration
+- [x] 4 real integrations (Slack, Google Sheets, Discord, Email)
+
+### ✅ Real Integrations
+- [x] Slack - Real message sending
+- [x] Google Sheets - Read/write/append operations
+- [x] Discord - Rich embeds and notifications
+- [x] Email - SMTP sending with HTML templates
 
 ### ✅ Technical Features
 - [x] Next.js 15 with TypeScript
@@ -165,11 +288,11 @@ npm run db:push
 npm run db:generate
 ```
 
-### Slack Integration Issues
-1. Verify token starts with `xoxb-`
-2. Check bot has required permissions
-3. Ensure bot is invited to target channels
-4. Test connection in Integrations tab
+### Integration Issues
+1. **Slack**: Verify token starts with `xoxb-`
+2. **Google Sheets**: Check service account permissions
+3. **Discord**: Ensure bot has required intents
+4. **Email**: Use App Password for Gmail
 
 ### Port Already in Use
 ```bash
@@ -188,14 +311,15 @@ If you encounter issues:
 2. Review server logs: `tail -f dev.log`
 3. Verify all environment variables are set
 4. Check the full README.md for detailed documentation
+5. Test each integration in the **Integrations** tab
 
 ## 🎉 Ready to Go!
 
 Once setup is complete:
 1. Open http://localhost:3000
 2. Go to **Builder** tab
-3. Try this prompt: `"Send a welcome message to Slack when user signs up"`
+3. Try this prompt: `"Send a welcome message to Slack, Discord, and email when user signs up"`
 4. Watch the AI create a complete workflow!
-5. Run it and see real Slack notifications!
+5. Run it and see real notifications on all platforms!
 
-Your AI Workflow Builder is now ready for production use! 🚀
+Your AI Workflow Builder is now ready for production use with 4 real integrations! 🚀
