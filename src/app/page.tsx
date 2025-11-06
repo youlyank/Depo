@@ -58,9 +58,11 @@ const nodeTypes = {
   condition: { color: 'bg-yellow-500', icon: '🔀' },
   delay: { color: 'bg-purple-500', icon: '⏰' },
   webhook: { color: 'bg-red-500', icon: '🌐' },
-  email: { color: 'bg-cyan-500', icon: '📧' },
   database: { color: 'bg-indigo-500', icon: '🗄️' },
   slack: { color: 'bg-purple-500', icon: '💬' },
+  'google-sheets': { color: 'bg-green-600', icon: '📊' },
+  discord: { color: 'bg-indigo-600', icon: '🎮' },
+  email: { color: 'bg-blue-500', icon: '📧' },
 }
 
 interface Workflow {

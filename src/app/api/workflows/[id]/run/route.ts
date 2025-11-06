@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { slackService } from '@/lib/slack'
+import { googleSheetsService } from '@/lib/google-sheets'
+import { discordService } from '@/lib/discord'
+import { emailService } from '@/lib/email'
 
 export async function POST(
   request: NextRequest,
@@ -125,6 +128,16 @@ async function executeNode(node: any, graph: Record<string, string[]>, context: 
       result = await executeDelay(node, context)
       break
       
+    case 'google-sheets':
+      // Google Sheets nodes perform spreadsheet operations
+      result = await executeGoogleSheets(node, context)
+      break
+      
+    case 'discord':
+      // Discord nodes send messages to Discord channels
+      result = await executeDiscord(node, context)
+      break
+      
     case 'email':
       // Email nodes send emails
       result = await executeEmail(node, context)
@@ -217,6 +230,189 @@ async function executeDatabase(node: any, context: any): Promise<any> {
     database: node.title,
     operation: 'SELECT',
     records: Math.floor(Math.random() * 100), // Random number of records
+    timestamp: new Date().toISOString()
+  }
+}
+
+async function executeGoogleSheets(node: any, context: any): Promise<any> {
+  // Simulate processing time
+  await new Promise(resolve => setTimeout(resolve, 2000))
+  
+  // Extract Google Sheets configuration
+  const operation = node.config?.operation || 'read'
+  const spreadsheetId = node.config?.spreadsheetId
+  const range = node.config?.range || 'Sheet1!A1:B10'
+  const values = node.config?.values || [['Test Data', 'From Workflow']]
+  
+  // Try to perform real Google Sheets operation if configured
+  if (googleSheetsService.isConfigured() && spreadsheetId) {
+    try {
+      let result
+      switch (operation) {
+        case 'read':
+          result = await googleSheetsService.readData(spreadsheetId, range)
+          return { 
+            googleSheets: node.title,
+            operation: 'read',
+            range,
+            rowsRead: result.length,
+            data: result,
+            realOperation: true,
+            timestamp: new Date().toISOString()
+          }
+          
+        case 'write':
+          result = await googleSheetsService.writeData(spreadsheetId, range, values)
+          return { 
+            googleSheets: node.title,
+            operation: 'write',
+            range,
+            rowsWritten: values.length,
+            realOperation: true,
+            timestamp: new Date().toISOString()
+          }
+          
+        case 'append':
+          result = await googleSheetsService.appendData(spreadsheetId, range, values)
+          return { 
+            googleSheets: node.title,
+            operation: 'append',
+            range,
+            rowsAppended: values.length,
+            realOperation: true,
+            timestamp: new Date().toISOString()
+          }
+          
+        default:
+          return { 
+            googleSheets: node.title,
+            operation: 'unknown',
+            error: 'Unsupported operation',
+            timestamp: new Date().toISOString()
+          }
+      }
+    } catch (error) {
+      console.error('Google Sheets operation failed:', error)
+      return { 
+        googleSheets: node.title,
+        operation,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      }
+    }
+  }
+  
+  // Fallback to simulation if Google Sheets not configured
+  return { 
+    googleSheets: node.title,
+    operation,
+    range,
+    simulated: true,
+    timestamp: new Date().toISOString()
+  }
+}
+
+async function executeDiscord(node: any, context: any): Promise<any> {
+  // Simulate processing time
+  await new Promise(resolve => setTimeout(resolve, 1500))
+  
+  // Extract Discord configuration
+  const channelId = node.config?.channelId
+  const message = node.config?.message || `Workflow executed: ${node.title}`
+  
+  // Try to send real Discord message if configured
+  if (discordService.isConfigured()) {
+    try {
+      const result = await discordService.sendMessage(
+        channelId || 'default',
+        {
+          content: message,
+          username: 'AI Workflow Builder',
+          avatarURL: 'https://cdn.discordapp.com/embed/avatars/0.png'
+        }
+      )
+      
+      return { 
+        discord: node.title,
+        sent: true,
+        channelId,
+        message,
+        realMessage: result.success,
+        messageId: result.messageId,
+        timestamp: new Date().toISOString()
+      }
+    } catch (error) {
+      console.error('Discord send failed:', error)
+      return { 
+        discord: node.title,
+        sent: false,
+        channelId,
+        message,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      }
+    }
+  }
+  
+  // Fallback to simulation if Discord not configured
+  return { 
+    discord: node.title,
+    sent: true,
+    channelId,
+    message,
+    simulated: true,
+    timestamp: new Date().toISOString()
+  }
+}
+
+async function executeEmail(node: any, context: any): Promise<any> {
+  // Simulate processing time
+  await new Promise(resolve => setTimeout(resolve, 1500))
+  
+  // Extract email configuration
+  const to = node.config?.to || 'test@example.com'
+  const subject = node.config?.subject || `Workflow executed: ${node.title}`
+  const message = node.config?.message || 'This is an automated message from your workflow.'
+  
+  // Try to send real email if configured
+  if (emailService.isConfigured()) {
+    try {
+      const result = await emailService.sendEmail({
+        to,
+        subject,
+        text: message,
+        html: `<p>${message}</p><p><em>Sent from AI Workflow Builder</em></p>`
+      })
+      
+      return { 
+        email: node.title,
+        sent: true,
+        to,
+        subject,
+        realEmail: result.success,
+        messageId: result.messageId,
+        timestamp: new Date().toISOString()
+      }
+    } catch (error) {
+      console.error('Email send failed:', error)
+      return { 
+        email: node.title,
+        sent: false,
+        to,
+        subject,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      }
+    }
+  }
+  
+  // Fallback to simulation if email not configured
+  return { 
+    email: node.title,
+    sent: true,
+    to,
+    subject,
+    simulated: true,
     timestamp: new Date().toISOString()
   }
 }
